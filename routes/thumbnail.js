@@ -26,6 +26,7 @@ const router = (fastify, options, done) => {
     { onRequest: [fastify.authenticate] },
     deleteAllThumbnails
   );
+  done();
 };
 
 module.exports = router;

@@ -10,6 +10,7 @@ const router = (fastify, options, done) => {
   fastify.post("/login", login);
   fastify.post("/forget-password", forgetPassword);
   fastify.post("/reset-password:token", resetPassword);
+  done();
 };
 
 module.exports = router;

@@ -1,13 +1,13 @@
-const { User } = require("../models/user");
+const { User } = require("../models/user.js");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 exports.register = async (request, reply) => {
   try {
     const { name, email, password } = request.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
-    await user.save();
-    reply.code(201).send({ message: "User registered successfully" });
+    const user = await User.create({ name, email, password: hashedPassword });
+    reply.code(201).send({ message: "User registered successfully", user });
   } catch (error) {
     reply.send(error);
   }
@@ -24,7 +24,7 @@ exports.login = async (request, reply) => {
     if (!isPasswordValid) {
       reply.code(401).send({ message: "Invalid email or password" });
     }
-    const token = fastify.jwt.sign({ id: user._id });
+    const token = request.server.jwt.sign({ id: user._id });
     reply.code(200).send({ token });
   } catch (error) {
     reply.send(error);
@@ -51,10 +51,10 @@ exports.forgetPassword = async (request, reply) => {
 
 exports.resetPassword = async (request, reply) => {
   try {
-    const { resetToken } = request.params;
+    const { token } = request.params;
     const { newPassword } = request.body;
     const user = await User.findOne({
-      resetPasswordToken: resetToken,
+      resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() },
     });
     if (!user) {
